@@ -36,3 +36,10 @@
     Justification = "Weird goto label",
     Scope = "member",
     Target = "~M:PlayerController.Update")]
+
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "StyleCop.CSharp.OrderingRules",
+    "SA1202:Elements should be ordered by access",
+    Justification = "Awake precede Start method",
+    Scope = "member",
+    Target = "~M:RaycastController.Start")]

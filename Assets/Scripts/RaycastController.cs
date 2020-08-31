@@ -10,7 +10,8 @@ using UnityEngine;
 public class RaycastController : MonoBehaviour
 {
     protected const float SkinWidth = .03f;
-    private new BoxCollider2D collider;
+
+    internal BoxCollider2D Collider { get; set; }
 
     internal RaycastOrigins RaycastStartingPts { get; } = new RaycastOrigins();
 
@@ -22,16 +23,20 @@ public class RaycastController : MonoBehaviour
 
     protected LayerMask CollisionMask { get; private set; }
 
+    private void Awake()
+    {
+        Collider = GetComponent<BoxCollider2D>();
+    }
+
     protected virtual void Start()
     {
-        collider = GetComponent<BoxCollider2D>();
         CollisionMask = LayerMask.GetMask("Ground");
         CalculateRaySpacing();
     }
 
     protected void UpdateRaycastOrigins()
     {
-        Bounds bounds = collider.bounds;
+        Bounds bounds = Collider.bounds;
         bounds.Expand(SkinWidth * -2);
 
         RaycastStartingPts.Update(
@@ -43,7 +48,7 @@ public class RaycastController : MonoBehaviour
 
     private void CalculateRaySpacing()
     {
-        Bounds bounds = collider.bounds;
+        Bounds bounds = Collider.bounds;
         bounds.Expand(SkinWidth * -2);
 
         HorizontalRayCount = Mathf.Clamp(HorizontalRayCount, 2, int.MaxValue);

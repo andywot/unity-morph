@@ -12,7 +12,7 @@ public class MovementController : RaycastController
     private float maxClimbAngle = 50;
     private float maxDescendAngle = 45;
 
-    private Vector2 playerInput;
+    internal Vector2 PlayerInput { get; set; }
 
     internal CollisionInfo Collisions { get; } = new CollisionInfo();
 
@@ -30,7 +30,7 @@ public class MovementController : RaycastController
     {
         UpdateRaycastOrigins();
         Collisions.Reset();
-        playerInput = input;
+        PlayerInput = input;
         displacementOld = displacement;
         if (displacement.x != 0)
         {
@@ -185,7 +185,7 @@ public class MovementController : RaycastController
                         continue; // Skip the collision check for current ray
                     }
 
-                    if (playerInput.y < 0 && Input.GetButton("Jump"))
+                    if (PlayerInput.y < 0 && Input.GetButton("Jump"))
                     {
                         continue;
                     }
