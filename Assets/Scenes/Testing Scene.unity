@@ -652,8 +652,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 995243505}
-  focusAreaSize: {x: 15, y: 30}
-  verticalOffset: 1
+  focusAreaSize: {x: 30, y: 30}
+  verticalOffset: 10
+  lookAheadDistanceX: 4
+  lookAheadSmoothTimeX: 0.5
+  smoothTimeY: 0.1
 --- !u!1 &570342634
 GameObject:
   m_ObjectHideFlags: 0
@@ -6441,6 +6444,7 @@ GameObject:
   - component: {fileID: 995243506}
   - component: {fileID: 995243505}
   - component: {fileID: 995243504}
+  - component: {fileID: 995243509}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -6563,12 +6567,24 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 995243503}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 103.82, y: -33.07, z: 0}
+  m_LocalPosition: {x: 118.2, y: -31.8, z: 0}
   m_LocalScale: {x: 5, y: 10, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &995243509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995243503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a2335e0e08a55641b05913799a6fc2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1060544815
 GameObject:
   m_ObjectHideFlags: 0

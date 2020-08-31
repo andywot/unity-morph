@@ -9,12 +9,12 @@ using UnityEngine;
 public class CameraFollowScript : MonoBehaviour
 {
     [SerializeField] private MovementController target;
-    [SerializeField] private Vector2 focusAreaSize;
-    [SerializeField] private float verticalOffset;
+    [SerializeField] private Vector2 focusAreaSize = new Vector2(30, 30);
+    [SerializeField] private float verticalOffset = 10f;
 
-    [SerializeField] private float lookAheadDistanceX;
-    [SerializeField] private float lookAheadSmoothTimeX;
-    [SerializeField] private float smoothTimeY;
+    [SerializeField] private float lookAheadDistanceX = 5f;
+    [SerializeField] private float lookAheadSmoothTimeX = .5f;
+    [SerializeField] private float smoothTimeY = .1f;
 
     private FocusArea focusArea;
 

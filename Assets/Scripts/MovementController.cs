@@ -6,11 +6,10 @@ using UnityEngine;
 
 public class MovementController : RaycastController
 {
-    private Vector3 displacementOld;
+    private Vector2 displacementOld;
     private float directionXOld;
 
-    private float maxClimbAngle = 50;
-    private float maxDescendAngle = 45;
+    private float maxSlopeAngle = 45;
 
     internal Vector2 PlayerInput { get; set; }
 
@@ -21,12 +20,12 @@ public class MovementController : RaycastController
         base.Start();
     }
 
-    internal void Move(Vector3 displacement)
+    internal void Move(Vector2 displacement)
     {
         Move(displacement, Vector2.zero);
     }
 
-    internal void Move(Vector3 displacement, Vector2 input)
+    internal void Move(Vector2 displacement, Vector2 input)
     {
         UpdateRaycastOrigins();
         Collisions.Reset();
@@ -52,7 +51,7 @@ public class MovementController : RaycastController
         transform.Translate(displacement);
     }
 
-    private void HorizontalCollisions(ref Vector3 displacement)
+    private void HorizontalCollisions(ref Vector2 displacement)
     {
         float directionX = Mathf.Sign(displacement.x);
         float rayLength = Mathf.Abs(displacement.x) + SkinWidth;
@@ -73,7 +72,7 @@ public class MovementController : RaycastController
             rayOrigin += Vector2.up * (HorizontalRaySpacing * i);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, CollisionMask);
 
-            Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
+            Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength * 10, Color.red);
 
             if (hit)
             {
@@ -83,7 +82,7 @@ public class MovementController : RaycastController
                 }
 
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
-                if (i == 0 && slopeAngle <= maxClimbAngle)
+                if (i == 0 && slopeAngle <= maxSlopeAngle)
                 {
                     if (Collisions.DescendingSlope)
                     {
@@ -102,7 +101,7 @@ public class MovementController : RaycastController
                     displacement.x += distanceToSlopeStart * directionX;
                 }
 
-                if (!Collisions.ClimbingSlope || slopeAngle > maxClimbAngle)
+                if (!Collisions.ClimbingSlope || slopeAngle > maxSlopeAngle)
                 {
                     displacement.x = Mathf.Min(Mathf.Abs(displacement.x), hit.distance - SkinWidth) * directionX;
                     rayLength = Mathf.Min(Mathf.Abs(displacement.x) + SkinWidth, hit.distance);
@@ -118,7 +117,7 @@ public class MovementController : RaycastController
         }
     }
 
-    private void ClimbSlope(ref Vector3 displacement, float slopeAngle)
+    private void ClimbSlope(ref Vector2 displacement, float slopeAngle)
     {
         float moveDistance = Mathf.Abs(displacement.x);
         float climbDistanceY = moveDistance * Mathf.Sin(slopeAngle * Mathf.Deg2Rad);
@@ -133,7 +132,7 @@ public class MovementController : RaycastController
         }
     }
 
-    private void DescendSlope(ref Vector3 displacement)
+    private void DescendSlope(ref Vector2 displacement)
     {
         float directionX = Mathf.Sign(displacement.x);
         Vector2 rayOrigin = directionX == 1 ? RaycastStartingPts.BottomLeft : RaycastStartingPts.BottomRight;
@@ -142,7 +141,7 @@ public class MovementController : RaycastController
         if (hit)
         {
             float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
-            if (slopeAngle != 0 && slopeAngle <= maxDescendAngle)
+            if (slopeAngle != 0 && slopeAngle <= maxSlopeAngle)
             {
                 if (Mathf.Sign(hit.normal.x) == directionX)
                 {
@@ -163,7 +162,7 @@ public class MovementController : RaycastController
         }
     }
 
-    private void VerticalCollisions(ref Vector3 displacement)
+    private void VerticalCollisions(ref Vector2 displacement)
     {
         float directionY = Mathf.Sign(displacement.y);
         float rayLength = Mathf.Abs(displacement.y) + SkinWidth;
@@ -174,7 +173,7 @@ public class MovementController : RaycastController
             rayOrigin += Vector2.right * ((VerticalRaySpacing * i) + displacement.x);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, CollisionMask);
 
-            Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
+            Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength * 10, Color.red);
 
             if (hit)
             {
