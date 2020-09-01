@@ -15,13 +15,14 @@ public class PlayerController : MonoBehaviour
     private float jumpGravity;
     private float fallGravity;
 
-    private float gravity;
     private float jumpVelocity;
     private float horizontalAccTime = 0.08f;
 
-    private Vector3 displacement;
-    private Vector3 velocity;
-    private Vector3 acceleration;
+    private Vector2 displacement;
+    private Vector2 velocity;
+    private Vector2 acceleration;
+    private float verticalAcceleration = 0;
+    private float horizontalAcceleration = 0;
 
     private float wallSlideMaxSpeed = 1f;
     [SerializeField] private Vector2 wallJumpClimb = new Vector2(60, 55);
@@ -40,6 +41,8 @@ public class PlayerController : MonoBehaviour
     private bool collideRight;
     private bool isWallHugging;
     private bool isJumpingFromGround;
+    private bool isSliding;
+    private float slopeAngle;
 
     private MovementInfo movementInfo = new MovementInfo();
 
@@ -52,10 +55,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        GetInput();
         DisplayDebugInfo();
         movementInfo.Update(controller);
-        StopMotionOnCollision();
+        HandelVerticalVelocity();
 
         MoveHorizontally();
         HandelWallSliding();
@@ -74,15 +76,18 @@ public class PlayerController : MonoBehaviour
     private void CalculateKinematics()
     {
         displacement = (velocity * Time.deltaTime) + (0.5f * acceleration * Mathf.Pow(Time.deltaTime, 2));
-        Vector3 newAcceleration = new Vector3(0, gravity, 0);
-        velocity += 0.5f * (acceleration + acceleration) * Time.deltaTime;
+        Vector2 newAcceleration = new Vector2(horizontalAcceleration, verticalAcceleration);
+        velocity += 0.5f * (acceleration + newAcceleration) * Time.deltaTime;
         acceleration = newAcceleration;
     }
 
     private void MoveHorizontally()
     {
-        float targetVelocityX = directionalInput.x * moveSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref horizontalVelocitySmoothing, horizontalAccTime);
+        if (!controller.Collisions.SlidingDownMaxSlope)
+        {
+            float targetVelocityX = directionalInput.x * moveSpeed;
+            velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref horizontalVelocitySmoothing, horizontalAccTime);
+        }
     }
 
     private void CalculateJump()
@@ -93,7 +98,7 @@ public class PlayerController : MonoBehaviour
 
         fallGravity = -2 * jumpHeight / Mathf.Pow(maxJumpDistance * (1 - apexRelativePosition) / moveSpeed, 2);
 
-        gravity = jumpGravity;
+        verticalAcceleration = jumpGravity;
     }
 
     private void Jump()
@@ -103,21 +108,21 @@ public class PlayerController : MonoBehaviour
         {
             if (movementInfo.HorizontalCollisionDir == directionalInput.x)
             {
-                gravity = fallGravity;
+                verticalAcceleration = fallGravity;
                 movementInfo.IsJumpingFromGround = false;
                 velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
                 velocity.y = wallJumpClimb.y;
             }
             else if (movementInfo.HorizontalCollisionDir == -directionalInput.x)
             {
-                gravity = fallGravity;
+                verticalAcceleration = fallGravity;
                 movementInfo.IsJumpingFromGround = false;
                 velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
                 velocity.y = wallJumpClimb.y;
             }
             else
             {
-                gravity = fallGravity;
+                verticalAcceleration = fallGravity;
                 movementInfo.IsJumpingFromGround = false;
                 velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
                 velocity.y = wallJumpClimb.y;
@@ -126,7 +131,7 @@ public class PlayerController : MonoBehaviour
 
         if (controller.Collisions.Below)
         {
-            gravity = jumpGravity;
+            verticalAcceleration = jumpGravity;
             velocity.y = jumpVelocity;
             movementInfo.IsJumpingFromGround = true;
         }
@@ -134,13 +139,13 @@ public class PlayerController : MonoBehaviour
 
     private void VariableJump()
     {
-        if (displacement.y < 0)
+        if (displacement.y < 0 && !controller.Collisions.SlidingDownMaxSlope)
         {
-            gravity = fallGravity;
+            verticalAcceleration = fallGravity;
         }
         else if (displacement.y > 0 && !Input.GetButton("Jump") && movementInfo.IsJumpingFromGround)
         {
-            gravity = fallGravity * 2;
+            verticalAcceleration = fallGravity * 2;
         }
     }
 
@@ -176,16 +181,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void StopMotionOnCollision()
+    private void HandelVerticalVelocity()
     {
-        if (controller.Collisions.Below)
+        if (controller.Collisions.Below || controller.Collisions.Above)
         {
-            displacement.y = velocity.y = 0;
-        }
-
-        if (controller.Collisions.Above)
-        {
-            displacement.y = velocity.y = 0;
+            if (controller.Collisions.SlidingDownMaxSlope)
+            {
+                verticalAcceleration = Mathf.Pow(Mathf.Sin(controller.Collisions.SlopeAngle * Mathf.Deg2Rad), 2) * fallGravity;
+                horizontalAcceleration = Mathf.Sin(controller.Collisions.SlopeAngle * Mathf.Deg2Rad) * Mathf.Cos(controller.Collisions.SlopeAngle * Mathf.Deg2Rad) * fallGravity;
+            }
+            else
+            {
+                velocity.y = displacement.y = 0;
+                horizontalAcceleration = 0;
+            }
         }
     }
 
@@ -225,6 +234,8 @@ public class PlayerController : MonoBehaviour
         collideRight = controller.Collisions.Right;
         isWallHugging = movementInfo.IsWallHugging;
         isJumpingFromGround = movementInfo.IsJumpingFromGround;
+        isSliding = controller.Collisions.SlidingDownMaxSlope;
+        slopeAngle = controller.Collisions.SlopeAngle;
     }
 
     private class MovementInfo
