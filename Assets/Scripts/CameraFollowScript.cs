@@ -13,8 +13,8 @@ public class CameraFollowScript : MonoBehaviour
     [SerializeField] private float verticalOffset = 10f;
 
     [SerializeField] private float lookAheadDistanceX = 5f;
-    [SerializeField] private float lookAheadSmoothTimeX = .5f;
-    [SerializeField] private float smoothTimeY = .1f;
+    [SerializeField] private float lookAheadSmoothTimeX = 0.5f;
+    [SerializeField] private float smoothTimeY = .2f;
 
     private FocusArea focusArea;
 

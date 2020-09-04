@@ -9,7 +9,7 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class RaycastController : MonoBehaviour
 {
-    private const float distanceBetweenRays = 1f;
+    private const float DistanceBetweenRays = 1f;
     protected const float SkinWidth = .03f;
 
     internal BoxCollider2D Collider { get; set; }
@@ -52,8 +52,8 @@ public class RaycastController : MonoBehaviour
         Bounds bounds = Collider.bounds;
         bounds.Expand(SkinWidth * -2);
 
-        HorizontalRayCount = Mathf.RoundToInt(bounds.size.y / distanceBetweenRays) + 1;
-        VerticalRayCount = Mathf.RoundToInt(bounds.size.x / distanceBetweenRays) + 1;
+        HorizontalRayCount = Mathf.RoundToInt(bounds.size.y / DistanceBetweenRays) + 1;
+        VerticalRayCount = Mathf.RoundToInt(bounds.size.x / DistanceBetweenRays) + 1;
 
         HorizontalRaySpacing = bounds.size.y / (HorizontalRayCount - 1);
         VerticalRaySpacing = bounds.size.x / (VerticalRayCount - 1);

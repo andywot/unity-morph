@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Semisolid
+  - Ladder
+  - Stairs
+  - SemiStairs
   layers:
   - Default
   - TransparentFX
