@@ -7,33 +7,28 @@ using UnityEngine;
 [RequireComponent(typeof(MovementController))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float jumpHeight = 11;
-    [SerializeField] private float walkSpeed = 18;
-    [SerializeField] private float maxJumpDistance = 18;
-    [SerializeField] private float apexRelativePosition = 0.6f;
+    private float jumpHeight = 11;
+    private float walkSpeed = 18;
+    private float maxJumpDistance = 18;
+    private float apexRelativePosition = 0.6f;
     private float climbSpeed = 10;
     private float timeToJumpApex;
-    private float jumpGravity;
-    private float fallGravity;
+    protected float jumpGravity;
+    protected float fallGravity;
 
-    private float jumpVelocity;
+    protected float jumpVelocity;
     private float horizontalAccTime = 0.08f;
 
     private Vector2 displacement;
-    private Vector2 velocity;
+    protected Vector2 velocity;
     private Vector2 acceleration;
-    private float verticalAcceleration;
-
-    private float wallSlideMaxSpeed = 1f;
-    [SerializeField] private Vector2 wallJumpClimb = new Vector2(60, 55);
-    [SerializeField] private float wallStickTime = 1f;
-    private float timeToWallUnstick;
+    protected float verticalAcceleration;
 
     internal MovementController controller;
-    private Vector2 directionalInput;
-    private bool jumpKeyPressed = false;
+    protected Vector2 directionalInput;
+    protected bool jumpKeyPressed = false;
 
-    private float horizontalVelocitySmoothing;
+    protected float horizontalVelocitySmoothing;
 
     // Debug (Can be delete)
     private bool onGround;
@@ -49,16 +44,15 @@ public class PlayerController : MonoBehaviour
     private float ySlopeAngle;
     private float slopeDirection;
 
-    private MovementInfo movementInfo = new MovementInfo();
+    protected MovementInfo movementInfo = new MovementInfo();
 
-    private void Start()
+    protected void Start()
     {
         controller = GetComponent<MovementController>();
         CalculateJump();
-        timeToWallUnstick = wallStickTime;
     }
 
-    private void Update()
+    protected void Update()
     {
         GetInput();
         DisplayDebugInfo();
@@ -106,34 +100,9 @@ public class PlayerController : MonoBehaviour
         verticalAcceleration = jumpGravity;
     }
 
-    private void Jump()
+    protected virtual void Jump()
     {
         jumpKeyPressed = false;
-        if (movementInfo.IsWallHugging && !controller.Collisions.Below)
-        {
-            if (movementInfo.HorizontalCollisionDir == directionalInput.x)
-            {
-                verticalAcceleration = fallGravity;
-                movementInfo.IsJumpingFromGround = false;
-                velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
-                velocity.y = wallJumpClimb.y;
-            }
-            else if (movementInfo.HorizontalCollisionDir == -directionalInput.x)
-            {
-                verticalAcceleration = fallGravity;
-                movementInfo.IsJumpingFromGround = false;
-                velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
-                velocity.y = wallJumpClimb.y;
-            }
-            else
-            {
-                verticalAcceleration = fallGravity;
-                movementInfo.IsJumpingFromGround = false;
-                velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
-                velocity.y = wallJumpClimb.y;
-            }
-        }
-
         if (controller.Collisions.Below || controller.Collisions.CanClimbLadder)
         {
             verticalAcceleration = jumpGravity;
@@ -154,36 +123,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void HandelWallSliding()
+    protected virtual void HandelWallSliding()
     {
-        if ((movementInfo.HorizontalCollisionDir == movementInfo.FaceDirection) && !controller.Collisions.Below && (movementInfo.FaceDirection != 0))
-        {
-            movementInfo.IsWallHugging = true;
-            if (velocity.y < -wallSlideMaxSpeed)
-            {
-                velocity.y = -wallSlideMaxSpeed;
-            }
-        }
-
-        if (movementInfo.HorizontalCollisionDir != 0 && !controller.Collisions.Below)
-        {
-            if (timeToWallUnstick > 0)
-            {
-                horizontalVelocitySmoothing = velocity.x = 0;
-                if (directionalInput.x != movementInfo.HorizontalCollisionDir && directionalInput.x != 0)
-                {
-                    timeToWallUnstick -= Time.deltaTime;
-                }
-                else
-                {
-                    timeToWallUnstick = wallStickTime;
-                }
-            }
-            else
-            {
-                timeToWallUnstick = wallStickTime;
-            }
-        }
     }
 
     private void ClimbLadder()
@@ -273,7 +214,7 @@ public class PlayerController : MonoBehaviour
         isClimbing = movementInfo.IsClimbing;
     }
 
-    private class MovementInfo
+    protected class MovementInfo
     {
         internal bool IsWallHugging { get; set; } = false;
 
