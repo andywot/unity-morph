@@ -25,8 +25,9 @@ public class PlayerController : MonoBehaviour
     protected float verticalAcceleration;
 
     internal MovementController controller;
-    protected Vector2 directionalInput;
-    protected bool jumpKeyPressed = false;
+    protected PlayerInput Input;
+
+    protected bool isJumping = false;
 
     protected float horizontalVelocitySmoothing;
 
@@ -49,6 +50,7 @@ public class PlayerController : MonoBehaviour
     protected void Start()
     {
         controller = GetComponent<MovementController>();
+        Input = GetComponent<PlayerInput>();
         CalculateJump();
     }
 
@@ -62,17 +64,17 @@ public class PlayerController : MonoBehaviour
         MoveHorizontally();
         HandelWallSliding();
         ClimbLadder();
-
-        if (jumpKeyPressed)
+        
+        if (isJumping)
         {
             Jump();
         }
 
         SetGravity();
-        
+
         CalculateKinematics();
         Physics2D.SyncTransforms();
-        controller.Move(displacement, directionalInput);
+        controller.Move(displacement, Input.DirectionalInput);
     }
 
     private void CalculateKinematics()
@@ -85,7 +87,7 @@ public class PlayerController : MonoBehaviour
 
     private void MoveHorizontally()
     {
-        float targetVelocityX = directionalInput.x * walkSpeed;
+        float targetVelocityX = Input.DirectionalInput.x * walkSpeed;
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref horizontalVelocitySmoothing, horizontalAccTime);
     }
 
@@ -100,15 +102,13 @@ public class PlayerController : MonoBehaviour
         verticalAcceleration = jumpGravity;
     }
 
-    protected virtual void Jump()
+    internal virtual void Jump()
     {
-        jumpKeyPressed = false;
-        if (controller.Collisions.Below || controller.Collisions.CanClimbLadder)
-        {
-            verticalAcceleration = jumpGravity;
-            velocity.y = jumpVelocity;
-            movementInfo.IsJumpingFromGround = true;
-        }
+        isJumping = false;
+
+        verticalAcceleration = jumpGravity;
+        velocity.y = jumpVelocity;
+        movementInfo.IsJumpingFromGround = true;
     }
 
     private void SetGravity()
@@ -117,24 +117,30 @@ public class PlayerController : MonoBehaviour
         {
             verticalAcceleration = fallGravity;
         }
-        else if (displacement.y > 0 && !Input.GetButton("Jump") && movementInfo.IsJumpingFromGround)
+        else if (displacement.y > 0 && !Input.JumpKeyDown && movementInfo.IsJumpingFromGround)
         {
             verticalAcceleration = fallGravity * 2;
         }
     }
 
-    protected virtual void HandelWallSliding()
+    internal void OnJumpInputDown()
     {
+        if ((controller.Collisions.Below || movementInfo.IsWallHugging || controller.Collisions.CanClimbLadder) && Input.DirectionalInput.y >= 0)
+        {
+            isJumping = true;
+        }
     }
+
+    protected virtual void HandelWallSliding() { }
 
     private void ClimbLadder()
     {
         if (controller.Collisions.CanClimbLadder)
         {
             verticalAcceleration = 0;
-            if (directionalInput.y != 0)
+            if (Input.DirectionalInput.y != 0)
             {
-                velocity.y = climbSpeed * directionalInput.y;
+                velocity.y = climbSpeed * Input.DirectionalInput.y;
                 movementInfo.IsClimbing = true;
             }
             else
@@ -157,26 +163,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    internal void SetDirectionalInput(Vector2 input)
-    {
-        directionalInput = input;
-    }
-
-    internal void OnJumpInputDown()
-    {
-        if ((controller.Collisions.Below || movementInfo.IsWallHugging) && directionalInput.y >= 0)
-        {
-            jumpKeyPressed = true;
-        }
-    }
-
     private void GetInput()
     {
-        if (directionalInput.x > 0)
+        if (Input.DirectionalInput.x > 0)
         {
             movementInfo.FaceDirection = 1;
         }
-        else if (directionalInput.x < 0)
+        else if (Input.DirectionalInput.x < 0)
         {
             movementInfo.FaceDirection = -1;
         }

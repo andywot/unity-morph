@@ -1,25 +1,36 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerController))]
 public class PlayerInput : MonoBehaviour
 {
+    internal bool JumpKeyDown { get; set; }
+    internal Vector2 DirectionalInput { get; set; }
+    
+    private PlayerControls controls;
     private PlayerController player;
 
-    private void Start()
+    private void Awake()
     {
         player = GetComponent<PlayerController>();
+        controls = new PlayerControls();
+
+        controls.Player.Move.performed += ctx => DirectionalInput = ctx.ReadValue<Vector2>();
+        controls.Player.Move.canceled += _ => DirectionalInput = Vector2.zero;
+
+        controls.Player.Jump.performed += _ => { JumpKeyDown = true; player.OnJumpInputDown(); };
+        controls.Player.Jump.canceled += _ => JumpKeyDown = false;
     }
 
-    private void Update()
+    private void OnEnable()
     {
-        Vector2 directionalInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        player.SetDirectionalInput(directionalInput);
+        controls.Player.Enable();
+    }
 
-        if (Input.GetButtonDown("Jump"))
-        {
-            player.OnJumpInputDown();
-        }
+    private void OnDisable()
+    {
+        controls.Player.Disable();
     }
 }

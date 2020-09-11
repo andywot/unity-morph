@@ -8,7 +8,6 @@ public class FoxController : PlayerController
     private Vector2 wallJumpClimb = new Vector2(60, 55);
     private float wallStickTime = .05f;
     private float timeToWallUnstick;
-    private new GameObject gameObject;
 
     private new void Start()
     {
@@ -21,19 +20,20 @@ public class FoxController : PlayerController
         base.Update();
     }
 
-    protected override void Jump()
+    internal override void Jump()
     {
-        jumpKeyPressed = false;
+        isJumping = false;
+
         if (movementInfo.IsWallHugging && !controller.Collisions.Below)
         {
-            if (movementInfo.HorizontalCollisionDir == directionalInput.x)
+            if (movementInfo.HorizontalCollisionDir == Input.DirectionalInput.x)
             {
                 verticalAcceleration = fallGravity;
                 movementInfo.IsJumpingFromGround = false;
                 velocity.x = -movementInfo.HorizontalCollisionDir * wallJumpClimb.x;
                 velocity.y = wallJumpClimb.y;
             }
-            else if (movementInfo.HorizontalCollisionDir == -directionalInput.x)
+            else if (movementInfo.HorizontalCollisionDir == -Input.DirectionalInput.x)
             {
                 verticalAcceleration = fallGravity;
                 movementInfo.IsJumpingFromGround = false;
@@ -73,7 +73,7 @@ public class FoxController : PlayerController
             if (timeToWallUnstick > 0)
             {
                 horizontalVelocitySmoothing = velocity.x = 0;
-                if (directionalInput.x != movementInfo.HorizontalCollisionDir && directionalInput.x != 0)
+                if (Input.DirectionalInput.x != movementInfo.HorizontalCollisionDir && Input.DirectionalInput.x != 0)
                 {
                     timeToWallUnstick -= Time.deltaTime;
                 }

@@ -11,9 +11,12 @@ public class InGameUI : MonoBehaviour
     [SerializeField] private GameObject pauseMenuUI;
     [SerializeField] private GameObject formSelectUI;
 
-    private void Update()
+    private PlayerControls controls;
+
+    private void Awake()
     {
-        if (Input.GetButtonDown("Pause"))
+        controls = new PlayerControls();
+        controls.GUI.Pause.performed += _ =>
         {
             if (IsGamePaused)
             {
@@ -23,9 +26,9 @@ public class InGameUI : MonoBehaviour
             {
                 Pause();
             }
-        }
+        };
 
-        if (Input.GetKeyDown(KeyCode.E))
+        controls.GUI.Inventory.performed += _ =>
         {
             if (IsFormSelectOpened)
             {
@@ -35,7 +38,7 @@ public class InGameUI : MonoBehaviour
             {
                 OpenInv();
             }
-        }
+        };
     }
 
     private void OpenInv()
@@ -75,5 +78,15 @@ public class InGameUI : MonoBehaviour
     {
         Debug.Log("Quit!");
         Application.Quit();
+    }
+
+    private void OnEnable()
+    {
+        controls.GUI.Enable();
+    }
+
+    private void OnDisable()
+    {
+        controls.GUI.Disable();
     }
 }
