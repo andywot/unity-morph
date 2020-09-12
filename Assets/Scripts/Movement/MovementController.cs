@@ -13,10 +13,13 @@ public class MovementController : RaycastController
     internal CollisionInfo Collisions;
     internal Vector2 PlayerInput;
 
+    private PlayerInput Input;
+
     protected override void Start()
     {
         base.Start();
         Collisions.FaceDir = 1;
+        Input = GetComponent<PlayerInput>();
     }
 
     internal void Move(Vector2 displacement, bool standingOnPlatform)
@@ -48,7 +51,7 @@ public class MovementController : RaycastController
             VerticalCollisions(ref displacement);
         }
 
-        transform.Translate(displacement);
+        transform.parent.Translate(displacement);
 
         if (standingOnPlatform)
         {
@@ -144,7 +147,7 @@ public class MovementController : RaycastController
                     {
                         continue;
                     }
-                    if (PlayerInput.y == -1 && Input.GetButton("Jump"))
+                    if (PlayerInput.y == -1 && Input.JumpKeyDown)
                     {
                         Collisions.FallingThroughPlatform = true;
                         Invoke("ResetFallingThroughPlatform", .5f);
