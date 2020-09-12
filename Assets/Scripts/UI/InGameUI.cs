@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+using Rewired;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,12 +10,19 @@ public class InGameUI : MonoBehaviour
     [SerializeField] private GameObject pauseMenuUI;
     [SerializeField] private GameObject formSelectUI;
 
-    private PlayerControls controls;
+    private Rewired.Player rPlayer;
+    private int playerId = 0;
 
     private void Awake()
     {
-        controls = new PlayerControls();
-        controls.GUI.Pause.performed += _ =>
+        rPlayer = ReInput.players.GetPlayer(playerId);
+        rPlayer.AddInputEventDelegate(OnPauseUpdate, UpdateLoopType.Update, "Pause");
+        rPlayer.AddInputEventDelegate(OnMorphUpdate, UpdateLoopType.Update, "Morph");
+    }
+
+    private void OnPauseUpdate(InputActionEventData data)
+    {
+        if (data.GetButtonDown())
         {
             if (IsGamePaused)
             {
@@ -26,9 +32,12 @@ public class InGameUI : MonoBehaviour
             {
                 Pause();
             }
-        };
+        }
+    }
 
-        controls.GUI.Inventory.performed += _ =>
+    private void OnMorphUpdate(InputActionEventData data)
+    {
+        if (data.GetButtonDown())
         {
             if (IsFormSelectOpened)
             {
@@ -38,7 +47,7 @@ public class InGameUI : MonoBehaviour
             {
                 OpenInv();
             }
-        };
+        }
     }
 
     private void OpenInv()
@@ -78,15 +87,5 @@ public class InGameUI : MonoBehaviour
     {
         Debug.Log("Quit!");
         Application.Quit();
-    }
-
-    private void OnEnable()
-    {
-        controls.GUI.Enable();
-    }
-
-    private void OnDisable()
-    {
-        controls.GUI.Disable();
     }
 }
