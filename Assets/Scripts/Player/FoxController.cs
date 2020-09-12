@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class FoxController : PlayerController
 {
+    // Wall Sliding Parameters
     private float wallSlideMaxSpeed = 1f;
     private Vector2 wallJumpClimb = new Vector2(60, 55);
     private float wallStickTime = .05f;

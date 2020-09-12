@@ -7,21 +7,27 @@ using UnityEngine;
 [RequireComponent(typeof(MovementController))]
 public class PlayerController : MonoBehaviour
 {
-    private float jumpHeight = 11;
-    private float walkSpeed = 18;
-    private float maxJumpDistance = 18;
-    private float apexRelativePosition = 0.6f;
-    private float climbSpeed = 10;
+    // Jumping Parameters
+    protected virtual float JumpHeight { get; } = 11;
+    protected virtual float MaxJumpDistance { get; } = 18;
+    protected virtual float ApexRelativePosition { get; } = 0.6f;
+    protected virtual float FallMultiplier { get; } = 2f;
+
+    // Horizontal Movement Parameters
+    protected virtual float WalkSpeed { get; } = 18;
+    protected virtual float HorizontalAccTime { get; } = 0.08f;
+
+    // Climbing Parameters
+    protected virtual float LadderClimbSpeed { get; } = 10;
+
     private float timeToJumpApex;
     protected float jumpGravity;
     protected float fallGravity;
-
     protected float jumpVelocity;
-    private float horizontalAccTime = 0.08f;
 
-    private Vector2 displacement;
+    protected Vector2 displacement;
     protected Vector2 velocity;
-    private Vector2 acceleration;
+    protected Vector2 acceleration;
     protected float verticalAcceleration;
 
     internal MovementController controller;
@@ -30,6 +36,8 @@ public class PlayerController : MonoBehaviour
     protected bool isJumping = false;
 
     protected float horizontalVelocitySmoothing;
+
+    protected MovementInfo movementInfo = new MovementInfo();
 
     // Debug (Can be delete)
     private bool onGround;
@@ -44,9 +52,7 @@ public class PlayerController : MonoBehaviour
     private float xSlopeAngle;
     private float ySlopeAngle;
     private float slopeDirection;
-
-    protected MovementInfo movementInfo = new MovementInfo();
-
+    
     protected void Start()
     {
         controller = GetComponent<MovementController>();
@@ -87,17 +93,17 @@ public class PlayerController : MonoBehaviour
 
     private void MoveHorizontally()
     {
-        float targetVelocityX = Input.DirectionalInput.x * walkSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref horizontalVelocitySmoothing, horizontalAccTime);
+        float targetVelocityX = Input.DirectionalInput.x * WalkSpeed;
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref horizontalVelocitySmoothing, HorizontalAccTime);
     }
 
     private void CalculateJump()
     {
-        timeToJumpApex = maxJumpDistance * apexRelativePosition / walkSpeed;
-        jumpGravity = -2 * jumpHeight / Mathf.Pow(timeToJumpApex, 2);
+        timeToJumpApex = MaxJumpDistance * ApexRelativePosition / WalkSpeed;
+        jumpGravity = -2 * JumpHeight / Mathf.Pow(timeToJumpApex, 2);
         jumpVelocity = -jumpGravity * timeToJumpApex;
 
-        fallGravity = -2 * jumpHeight / Mathf.Pow(maxJumpDistance * (1 - apexRelativePosition) / walkSpeed, 2);
+        fallGravity = -2 * JumpHeight / Mathf.Pow(MaxJumpDistance * (1 - ApexRelativePosition) / WalkSpeed, 2);
 
         verticalAcceleration = jumpGravity;
     }
@@ -119,7 +125,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (displacement.y > 0 && !Input.JumpKeyDown && movementInfo.IsJumpingFromGround)
         {
-            verticalAcceleration = fallGravity * 2;
+            verticalAcceleration = fallGravity * FallMultiplier;
         }
     }
 
@@ -140,7 +146,7 @@ public class PlayerController : MonoBehaviour
             verticalAcceleration = 0;
             if (Input.DirectionalInput.y != 0)
             {
-                velocity.y = climbSpeed * Input.DirectionalInput.y;
+                velocity.y = LadderClimbSpeed * Input.DirectionalInput.y;
                 movementInfo.IsClimbing = true;
             }
             else
