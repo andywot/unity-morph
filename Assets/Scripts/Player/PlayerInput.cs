@@ -1,6 +1,10 @@
-﻿using UnityEngine;
-using Rewired;
+﻿// <copyright file="PlayerInput.cs" company="FruitDragons">
+// Copyright (c) FruitDragons. All rights reserved.
+// </copyright>
+
 using System;
+using Rewired;
+using UnityEngine;
 
 [RequireComponent(typeof(PlayerController))]
 public class PlayerInput : MonoBehaviour

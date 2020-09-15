@@ -5,7 +5,7 @@ using UnityEngine;
 public class HumanoidController : PlayerController
 {
     [SerializeField] protected override float JumpHeight => 5f;
-    [SerializeField] protected override float MaxJumpDistance => 5f;
+    [SerializeField] protected override float MaxJumpDistance => 12f;
     [SerializeField] protected override float ApexRelativePosition => .6f;
     [SerializeField] protected override float FallMultiplier => 2f;
 

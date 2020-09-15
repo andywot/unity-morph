@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using static PlayerEvents;
 
 public class PlayerFormSelect : MonoBehaviour
 {
@@ -13,7 +14,7 @@ public class PlayerFormSelect : MonoBehaviour
     }
 
     private PlayerForm activeFormEnum;
-    private GameObject activeForm;
+    internal GameObject ActiveForm;
 
     internal PlayerForm selectedFormEnum = PlayerForm.Unselected;
     private GameObject selectedForm;
@@ -24,7 +25,7 @@ public class PlayerFormSelect : MonoBehaviour
 
     private bool m_Start;
 
-    private void Start()
+    private void Awake()
     {
         GetFirstActiveChild();
         collisionMask = LayerMask.GetMask("Ground");
@@ -45,8 +46,8 @@ public class PlayerFormSelect : MonoBehaviour
         {
             if (child.gameObject.activeSelf && child.tag != "FormSwitchCheck")
             {
-                activeForm = child.gameObject;
-                activeFormEnum = (PlayerForm)Enum.Parse(typeof(PlayerForm), activeForm.name);
+                ActiveForm = child.gameObject;
+                activeFormEnum = (PlayerForm)Enum.Parse(typeof(PlayerForm), ActiveForm.name);
             }
         }
     }
@@ -67,12 +68,14 @@ public class PlayerFormSelect : MonoBehaviour
 
         if (canMorph)
         {
-            activeForm.SetActive(false);
+            playerMorphEvent.Invoke();
+            
+            ActiveForm.SetActive(false);
             selectedForm.SetActive(true);
 
-            previousSelectedForm = activeForm;
+            previousSelectedForm = ActiveForm;
 
-            activeForm = selectedForm;
+            ActiveForm = selectedForm;
             activeFormEnum = selectedFormEnum;
 
             selectedForm = null;

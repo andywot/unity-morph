@@ -1,14 +1,18 @@
-﻿// <copyright file="CameraScript.cs" company="FruitDragons">
+﻿// <copyright file="CameraFollowScript.cs" company="FruitDragons">
 // Copyright (c) FruitDragons. All rights reserved.
 // </copyright>
 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using static PlayerEvents;
 
 public class CameraFollowScript : MonoBehaviour
 {
-    [SerializeField] private MovementController target;
+    private MovementController target;
+
+    [SerializeField] private PlayerFormSelect player;
     [SerializeField] private Vector2 focusAreaSize = new Vector2(30, 30);
     [SerializeField] private float verticalOffset = 10f;
 
@@ -25,9 +29,13 @@ public class CameraFollowScript : MonoBehaviour
     private float smoothLookVelocityX;
     private float smoothVelocityY;
 
+    private bool m_Start = false;
+
     private void Start()
     {
-        focusArea = new FocusArea(target.Collider.bounds, focusAreaSize);
+        m_Start = true;
+        GetTrackTarget();
+        playerMorphEvent.AddListener(GetTrackTarget);
     }
 
     private void LateUpdate()
@@ -60,10 +68,19 @@ public class CameraFollowScript : MonoBehaviour
         transform.position = (Vector3)focusPosition + Vector3.forward * -10;
     }
 
+    private void GetTrackTarget()
+    {
+        target = player.ActiveForm.GetComponent<MovementController>();
+        focusArea = new FocusArea(target.Collider.bounds, focusAreaSize);
+    }
+
     private void OnDrawGizmos()
     {
-        Gizmos.color = new Color(1, 0, 0, .3f);
-        Gizmos.DrawCube(focusArea.Center, focusAreaSize);
+        if (focusArea != null && m_Start)
+        {
+            Gizmos.color = new Color(1, 0, 0, .3f);
+            Gizmos.DrawCube(focusArea.Center, focusAreaSize);
+        }
     }
 
     internal class FocusArea
