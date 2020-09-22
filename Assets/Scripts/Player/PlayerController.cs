@@ -81,6 +81,7 @@ public class PlayerController : MonoBehaviour
         CalculateKinematics();
         Physics2D.SyncTransforms();
         controller.Move(displacement, Input.DirectionalInput);
+        UpdateAnimator();
     }
 
     private void CalculateKinematics()
@@ -179,10 +180,6 @@ public class PlayerController : MonoBehaviour
         {
             movementInfo.FaceDirection = -1;
         }
-        else
-        {
-            movementInfo.FaceDirection = 0;
-        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -200,6 +197,11 @@ public class PlayerController : MonoBehaviour
             controller.Collisions.CanClimbLadder = false;
             verticalAcceleration = fallGravity;
         }
+    }
+
+    internal virtual void UpdateAnimator()
+    {
+
     }
 
     private void DisplayDebugInfo()

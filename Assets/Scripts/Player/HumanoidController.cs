@@ -14,13 +14,22 @@ public class HumanoidController : PlayerController
 
     [SerializeField] protected override float LadderClimbSpeed => 15f;
 
+    private Animator animator;
+
     private new void Start()
     {
         base.Start();
+        animator = GetComponent<Animator>();
     }
 
     private new void Update()
     {
         base.Update();
+    }
+
+    internal override void UpdateAnimator()
+    {
+        animator.SetFloat("Move X", Input.DirectionalInput.x);
+        animator.SetFloat("Speed", Mathf.Abs(velocity.x));
     }
 }
