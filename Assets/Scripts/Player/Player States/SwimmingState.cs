@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class SwimmingState : PlayerState
 {
+    public SwimmingState(PlayerController player, PlayerInput input) : base(player, input) { }
+
     public override void Execute()
     {
-        throw new System.NotImplementedException();
     }
 }

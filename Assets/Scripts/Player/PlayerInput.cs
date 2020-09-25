@@ -9,13 +9,21 @@ using UnityEngine.Events;
 
 public class PlayerInput : MonoBehaviour
 {
-    internal bool JumpKeyDown { get; set; }
-    internal Vector2 DirectionalInput { get; set; }
+    #region Exposed fields and properties
+
+    public Rewired.Player rPlayer;
+
+    public bool IsJumpKeyDown { get; private set; }
+    public Vector2 DirectionalInput { get; private set; }
+
+    #endregion
+
+    #region Internal fields
 
     private PlayerController player;
-    private Rewired.Player rPlayer;
-
     private int playerId = 0;
+
+    #endregion
 
     private void Awake()
     {
@@ -23,10 +31,11 @@ public class PlayerInput : MonoBehaviour
         rPlayer = ReInput.players.GetPlayer(playerId);
 
         rPlayer.AddInputEventDelegate(OnJumpUpdate, UpdateLoopType.Update, "Jump");
-        rPlayer.AddInputEventDelegate(player.OnJumpInputDown, UpdateLoopType.Update, InputActionEventType.ButtonJustPressed, "Jump");
         rPlayer.AddInputEventDelegate(OnMoveHorizontal, UpdateLoopType.Update, InputActionEventType.AxisActiveOrJustInactive, "Move Horizontal");
         rPlayer.AddInputEventDelegate(OnMoveVertical, UpdateLoopType.Update, InputActionEventType.AxisActiveOrJustInactive, "Move Vertical");
     }
+
+    #region Input events
 
     private void OnMoveHorizontal(InputActionEventData data)
     {
@@ -40,14 +49,8 @@ public class PlayerInput : MonoBehaviour
 
     private void OnJumpUpdate(InputActionEventData data)
     {
-        if (data.GetButtonDown())
-        {
-            JumpKeyDown = true;
-        }
-
-        if (data.GetButtonUp())
-        {
-            JumpKeyDown = false;
-        }
+        IsJumpKeyDown = data.GetButton();
     }
+
+    #endregion
 }

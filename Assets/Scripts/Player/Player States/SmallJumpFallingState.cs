@@ -1,21 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Rewired;
 using UnityEngine;
 
-public class WalkingState : PlayerState
+public class SmallJumpFallingState : PlayerState
 {
-    public WalkingState(PlayerController player, PlayerInput input) : base(player, input) { }
+    public SmallJumpFallingState(PlayerController player, PlayerInput input) : base(player, input) { }
     
     private float horizontalVelocitySmoothing;
+
+    public override void Enter()
+    {
+        player.acceleration.Value = new Vector2(0, player.fallGravity * player.playerMovementData.FallMultiplier);
+    }
 
     public override void Execute()
     {
         HandleLogic();
 
-        if (input.IsJumpKeyDown)
-            player.stateMachine.SetState(new JumpingState(player, input));
-
-        if (player.velocity.Value.x == 0 && player.controller.isGrounded)
+        if (player.controller.isGrounded)
             player.stateMachine.SetState(new GroundedState(player, input));
     }
 
@@ -23,5 +26,10 @@ public class WalkingState : PlayerState
     {
         float targetVelocityX = input.DirectionalInput.x * player.playerMovementData.WalkSpeed;
         player.velocity.Value.x = Mathf.SmoothDamp(player.velocity.Value.x, targetVelocityX, ref horizontalVelocitySmoothing, player.playerMovementData.HorizontalAccelerationTime);
+    }
+
+    public override void Exit()
+    {
+        player.acceleration.Value = new Vector2(0, player.jumpGravity);
     }
 }

@@ -1,7 +1,11 @@
-﻿public abstract class PlayerState
+﻿public abstract class PlayerState : State
 {
-    public abstract void Execute();
+    protected PlayerController player;
+    protected PlayerInput input;
 
-    public virtual void Enter() { }
-    public virtual void Exit() { }
+    public PlayerState(PlayerController player, PlayerInput input)
+    {
+        this.player = player;
+        this.input = input;
+    }
 }

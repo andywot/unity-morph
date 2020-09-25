@@ -47,7 +47,7 @@ public class CameraFollowScript : MonoBehaviour
         if (focusArea.Displacement.x != 0)
         {
             lookAheadDirectionX = Mathf.Sign(focusArea.Displacement.x);
-            if (Mathf.Sign(targetPlayer.Input.DirectionalInput.x) == Mathf.Sign(focusArea.Displacement.x) && targetPlayer.Input.DirectionalInput.x != 0)
+            if (Mathf.Sign(targetPlayer.playerInput.DirectionalInput.x) == Mathf.Sign(focusArea.Displacement.x) && targetPlayer.playerInput.DirectionalInput.x != 0)
             {
                 isLookingAhead = true;
                 targetLookAheadX = lookAheadDistanceX * lookAheadDirectionX;

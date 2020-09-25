@@ -8,23 +8,39 @@ using UnityEngine.Events;
 [RequireComponent(typeof(MovementController))]
 public class PlayerController : MonoBehaviour
 {
-    public PlayerControllerParameters player;
-    public MovementController controller;
-    public PlayerInput Input;
+    #region Class references
 
+    [Header("Class references")]
+    public PlayerControllerParameters playerMovementData;
+    public MovementController controller;
+    public PlayerInput playerInput;
+    public StateMachine stateMachine = new StateMachine();
+
+    #endregion
+
+    #region Exposed fields
+
+    [Header("Exposed fields")]
     public Vector2Variable displacement;
     public Vector2Variable velocity;
     public Vector2Variable acceleration;
 
-    private float timeToJumpApex;
-    protected float jumpGravity;
-    protected float fallGravity;
-    protected float jumpVelocity;
+    [Header("Jumping parameters")]
+    public float timeToJumpApex;
 
-    private float horizontalVelocitySmoothing;
-    private bool isJumping;
+    public float jumpGravity;
+    public float fallGravity;
+    public float jumpVelocity;
 
-    private PlayerState currentState;
+    #endregion
+
+    #region Internal fields
+
+
+
+    #endregion
+
+    #region MonoBehaviours
 
     private void Awake()
     {
@@ -33,6 +49,26 @@ public class PlayerController : MonoBehaviour
         controller.OnTriggerExitEvent += OnTriggerExitEvent;
         controller.OnControllerCollidedEvent += OnControllerCollidedEvent;
     }
+
+    private void Start()
+    {
+        stateMachine.SetState(new GroundedState(this, playerInput));
+    }
+
+    private void Update()
+    {
+        StopMotionOnCollision();
+
+        stateMachine.currentState.Execute();
+
+        CalculateKinematics();
+        Physics2D.SyncTransforms();
+        controller.Move(displacement.Value);
+
+        velocity.Value = controller.velocity;
+    }
+
+    #endregion
 
     #region Event listeners
 
@@ -50,51 +86,10 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    private void Update()
-    {
-        StopMotionOnCollision();
-
-        currentState.Execute();
-
-        CalculateKinematics();
-        Physics2D.SyncTransforms();
-        controller.Move(displacement.Value);
-
-        velocity.Value = controller.velocity;
-    }
-
     private void CalculateKinematics()
     {
         velocity.Value += acceleration.Value * Time.deltaTime;
         displacement.Value = velocity.Value * Time.deltaTime;
-    }
-
-    private void SetGravity()
-    {
-        if (velocity.Value.y < 0)
-        {
-            acceleration.Value = new Vector2(0, fallGravity);
-        }
-        else if (displacement.Value.y > 0 && !Input.JumpKeyDown)
-        {
-            acceleration.Value = new Vector2(0, fallGravity * player.FallMultiplier);
-        }
-    }
-
-    private void Jump()
-    {
-        isJumping = false;
-
-        acceleration.Value = new Vector2(0, jumpGravity);
-        velocity.Value.y = jumpVelocity;
-    }
-
-    public void OnJumpInputDown(InputActionEventData data)
-    {
-        if (controller.isGrounded && Input.DirectionalInput.y >= 0)
-        {
-            isJumping = true;
-        }
     }
 
     private void StopMotionOnCollision()
@@ -105,39 +100,14 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void MoveHorizontally()
-    {
-        float targetVelocityX = Input.DirectionalInput.x * player.WalkSpeed;
-        velocity.Value.x = Mathf.SmoothDamp(velocity.Value.x, targetVelocityX, ref horizontalVelocitySmoothing, player.HorizontalAccelerationTime);
-    }
-
-    private void HandelWallSliding()
-    {
-    }
-
-    private void ClimbLadder()
-    {
-    }
-
     private void CalculateJump()
     {
-        timeToJumpApex = player.MaxJumpDistance * player.ApexRelativePosition / player.WalkSpeed;
-        jumpGravity = -2 * player.JumpHeight / Mathf.Pow(timeToJumpApex, 2);
+        timeToJumpApex = playerMovementData.MaxJumpDistance * playerMovementData.ApexRelativePosition / playerMovementData.WalkSpeed;
+        jumpGravity = -2 * playerMovementData.JumpHeight / Mathf.Pow(timeToJumpApex, 2);
         jumpVelocity = -jumpGravity * timeToJumpApex;
 
-        fallGravity = -2 * player.JumpHeight / Mathf.Pow(player.MaxJumpDistance * (1 - player.ApexRelativePosition) / player.WalkSpeed, 2);
+        fallGravity = -2 * playerMovementData.JumpHeight / Mathf.Pow(playerMovementData.MaxJumpDistance * (1 - playerMovementData.ApexRelativePosition) / playerMovementData.WalkSpeed, 2);
 
         acceleration.Value = new Vector2(0, jumpGravity);
-    }
-
-    public void SetState(PlayerState newState)
-    {
-        if (currentState != null)
-            currentState.Exit();
-
-        currentState = newState;
-
-        if (currentState != null)
-            currentState.Enter();
     }
 }

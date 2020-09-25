@@ -265,12 +265,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b39d1ca73418a2c45927e89d97d2c511, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 11400000, guid: f9ee35d8b7dab754c8cd921c16b663a9, type: 2}
+  playerMovementData: {fileID: 11400000, guid: f9ee35d8b7dab754c8cd921c16b663a9, type: 2}
   controller: {fileID: 484927904}
-  Input: {fileID: 484927909}
+  playerInput: {fileID: 484927909}
   displacement: {fileID: 11400000, guid: e1aec2d61b2392d45b660dc67958b0d9, type: 2}
   velocity: {fileID: 11400000, guid: 5e5d5eee3b842f54b84e44643db897ef, type: 2}
   acceleration: {fileID: 11400000, guid: 775124ab11425d1459613d9ade798052, type: 2}
+  timeToJumpApex: 0
+  jumpGravity: 0
+  fallGravity: 0
+  jumpVelocity: 0
 --- !u!114 &484927904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,7 +442,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 484927902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 112.76, y: -28.7, z: 0}
+  m_LocalPosition: {x: 114.1, y: -35.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -843,7 +847,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335933349}
   m_LocalRotation: {x: 0, y: 0, z: 0.3420201, w: 0.9396927}
-  m_LocalPosition: {x: 208.3, y: 19.1, z: 0}
+  m_LocalPosition: {x: 252.8, y: 23.7, z: 0}
   m_LocalScale: {x: 59.96083, y: 2.064671, z: 1}
   m_Children: []
   m_Father: {fileID: 1397305125}
@@ -988,7 +992,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1521601720}
   m_LocalRotation: {x: 0, y: 0, z: 0.08098179, w: 0.99671566}
-  m_LocalPosition: {x: 164.7, y: 0.3, z: 0}
+  m_LocalPosition: {x: 202.9, y: 1.1, z: 0}
   m_LocalScale: {x: 59.96083, y: 2.064671, z: 1}
   m_Children: []
   m_Father: {fileID: 1397305125}
@@ -1313,7 +1317,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2023244893969004728, guid: 01953618a0eda7542b99a6c8aa2b76c6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 59.92
+      value: 103.46
       objectReference: {fileID: 0}
     - target: {fileID: 2023244893969004728, guid: 01953618a0eda7542b99a6c8aa2b76c6, type: 3}
       propertyPath: m_LocalPosition.y
