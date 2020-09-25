@@ -11,6 +11,7 @@ using static PlayerEvents;
 public class CameraFollowScript : MonoBehaviour
 {
     private MovementController target;
+    private PlayerController targetPlayer;
 
     [SerializeField] private PlayerFormSelect player;
     [SerializeField] private Vector2 focusAreaSize = new Vector2(30, 30);
@@ -40,13 +41,13 @@ public class CameraFollowScript : MonoBehaviour
 
     private void LateUpdate()
     {
-        focusArea.Update(target.Collider.bounds);
+        focusArea.Update(target.boxCollider.bounds);
         Vector2 focusPosition = focusArea.Center + (Vector2.up * verticalOffset);
 
         if (focusArea.Displacement.x != 0)
         {
             lookAheadDirectionX = Mathf.Sign(focusArea.Displacement.x);
-            if (Mathf.Sign(target.PlayerInput.x) == Mathf.Sign(focusArea.Displacement.x) && target.PlayerInput.x != 0)
+            if (Mathf.Sign(targetPlayer.Input.DirectionalInput.x) == Mathf.Sign(focusArea.Displacement.x) && targetPlayer.Input.DirectionalInput.x != 0)
             {
                 isLookingAhead = true;
                 targetLookAheadX = lookAheadDistanceX * lookAheadDirectionX;
@@ -71,7 +72,8 @@ public class CameraFollowScript : MonoBehaviour
     private void GetTrackTarget()
     {
         target = player.ActiveForm.GetComponent<MovementController>();
-        focusArea = new FocusArea(target.Collider.bounds, focusAreaSize);
+        targetPlayer = player.ActiveForm.GetComponent<PlayerController>();
+        focusArea = new FocusArea(target.boxCollider.bounds, focusAreaSize);
     }
 
     private void OnDrawGizmos()

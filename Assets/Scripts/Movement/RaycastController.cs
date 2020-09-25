@@ -1,20 +1,24 @@
-﻿// <copyright file="RaycastController.cs" company="FruitDragons">
-// Copyright (c) FruitDragons. All rights reserved.
-// </copyright>
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class RaycastController : MonoBehaviour
 {
+    protected struct RaycastOrigins
+    {
+        internal Vector2 topLeft;
+        internal Vector2 topRight;
+        internal Vector2 bottomLeft;
+        internal Vector2 bottomRight;
+    }
+
+
+    protected const float SkinWidth = 0.03f;
     private const float DistanceBetweenRays = 1f;
-    protected const float SkinWidth = .03f;
 
-    internal BoxCollider2D Collider { get; set; }
-
-    internal RaycastOrigins RaycastStartingPts { get; } = new RaycastOrigins();
+    protected BoxCollider2D Collider2D;
+    protected RaycastOrigins _RaycastOrigins;
 
     protected int HorizontalRayCount { get; private set; }
     protected int VerticalRayCount { get; private set; }
@@ -22,59 +26,33 @@ public class RaycastController : MonoBehaviour
     protected float HorizontalRaySpacing { get; private set; }
     protected float VerticalRaySpacing { get; private set; }
 
-    protected LayerMask CollisionMask { get; private set; }
-
-    private void Awake()
+    protected virtual void Awake()
     {
-        Collider = GetComponent<BoxCollider2D>();
-    }
-
-    protected virtual void Start()
-    {
-        CollisionMask = LayerMask.GetMask("Ground");
+        Collider2D = GetComponent<BoxCollider2D>();
         CalculateRaySpacing();
     }
 
     protected void UpdateRaycastOrigins()
     {
-        Bounds bounds = Collider.bounds;
-        bounds.Expand(SkinWidth * -2);
+        Bounds modifiedBounds = Collider2D.bounds;
+        modifiedBounds.Expand(SkinWidth * -2);
 
-        RaycastStartingPts.Update(
-            new Vector2(bounds.min.x, bounds.min.y),
-            new Vector2(bounds.max.x, bounds.min.y),
-            new Vector2(bounds.min.x, bounds.max.y),
-            new Vector2(bounds.max.x, bounds.max.y));
+        _RaycastOrigins.bottomLeft = new Vector2(modifiedBounds.min.x, modifiedBounds.min.y);
+        _RaycastOrigins.bottomRight = new Vector2(modifiedBounds.max.x, modifiedBounds.min.y);
+        _RaycastOrigins.topLeft = new Vector2(modifiedBounds.min.x, modifiedBounds.max.y);
+        _RaycastOrigins.topRight = new Vector2(modifiedBounds.max.x, modifiedBounds.max.y);
     }
 
-    private void CalculateRaySpacing()
+    protected void CalculateRaySpacing()
     {
-        Bounds bounds = Collider.bounds;
-        bounds.Expand(SkinWidth * -2);
+        Bounds modifiedBounds = Collider2D.bounds;
+        modifiedBounds.Expand(SkinWidth * -2);
 
-        HorizontalRayCount = Mathf.RoundToInt(bounds.size.y / DistanceBetweenRays) + 1;
-        VerticalRayCount = Mathf.RoundToInt(bounds.size.x / DistanceBetweenRays) + 1;
+        HorizontalRayCount = Mathf.RoundToInt(modifiedBounds.size.y / DistanceBetweenRays) + 1;
+        VerticalRayCount = Mathf.RoundToInt(modifiedBounds.size.x / DistanceBetweenRays) + 1;
 
-        HorizontalRaySpacing = bounds.size.y / (HorizontalRayCount - 1);
-        VerticalRaySpacing = bounds.size.x / (VerticalRayCount - 1);
+        HorizontalRaySpacing = modifiedBounds.size.y / (HorizontalRayCount - 1);
+        VerticalRaySpacing = modifiedBounds.size.x / (VerticalRayCount - 1);
     }
 
-    internal class RaycastOrigins
-    {
-        internal Vector2 TopLeft { get; private set; }
-
-        internal Vector2 TopRight { get; private set; }
-
-        internal Vector2 BottomLeft { get; private set; }
-
-        internal Vector2 BottomRight { get; private set; }
-
-        internal void Update(Vector2 bottomLeft, Vector2 bottomRight, Vector2 topLeft, Vector2 topRight)
-        {
-            BottomLeft = bottomLeft;
-            BottomRight = bottomRight;
-            TopLeft = topLeft;
-            TopRight = topRight;
-        }
-    }
 }

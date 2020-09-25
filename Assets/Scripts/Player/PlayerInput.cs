@@ -5,13 +5,13 @@
 using System;
 using Rewired;
 using UnityEngine;
+using UnityEngine.Events;
 
-[RequireComponent(typeof(PlayerController))]
 public class PlayerInput : MonoBehaviour
 {
     internal bool JumpKeyDown { get; set; }
     internal Vector2 DirectionalInput { get; set; }
-    
+
     private PlayerController player;
     private Rewired.Player rPlayer;
 
@@ -22,13 +22,8 @@ public class PlayerInput : MonoBehaviour
         player = GetComponent<PlayerController>();
         rPlayer = ReInput.players.GetPlayer(playerId);
 
-        //controls.Player.Move.performed += ctx => DirectionalInput = ctx.ReadValue<Vector2>();
-        //controls.Player.Move.canceled += _ => DirectionalInput = Vector2.zero;
-
-        //controls.Player.Jump.performed += _ => { JumpKeyDown = true; player.OnJumpInputDown(); };
-        //controls.Player.Jump.canceled += _ => JumpKeyDown = false;
-
         rPlayer.AddInputEventDelegate(OnJumpUpdate, UpdateLoopType.Update, "Jump");
+        rPlayer.AddInputEventDelegate(player.OnJumpInputDown, UpdateLoopType.Update, InputActionEventType.ButtonJustPressed, "Jump");
         rPlayer.AddInputEventDelegate(OnMoveHorizontal, UpdateLoopType.Update, InputActionEventType.AxisActiveOrJustInactive, "Move Horizontal");
         rPlayer.AddInputEventDelegate(OnMoveVertical, UpdateLoopType.Update, InputActionEventType.AxisActiveOrJustInactive, "Move Vertical");
     }
@@ -48,7 +43,6 @@ public class PlayerInput : MonoBehaviour
         if (data.GetButtonDown())
         {
             JumpKeyDown = true;
-            player.OnJumpInputDown();
         }
 
         if (data.GetButtonUp())

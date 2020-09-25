@@ -1,254 +1,143 @@
-﻿// <copyright file="PlayerController.cs" company="FruitDragons">
-// Copyright (c) FruitDragons. All rights reserved.
-// </copyright>
-
+﻿using Rewired;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(MovementController))]
 public class PlayerController : MonoBehaviour
 {
-    // Jumping Parameters
-    protected virtual float JumpHeight { get; } = 11;
-    protected virtual float MaxJumpDistance { get; } = 18;
-    protected virtual float ApexRelativePosition { get; } = 0.6f;
-    protected virtual float FallMultiplier { get; } = 2f;
+    public PlayerControllerParameters player;
+    public MovementController controller;
+    public PlayerInput Input;
 
-    // Horizontal Movement Parameters
-    protected virtual float WalkSpeed { get; } = 18;
-    protected virtual float HorizontalAccTime { get; } = 0.08f;
-
-    // Climbing Parameters
-    protected virtual float LadderClimbSpeed { get; } = 10;
+    public Vector2Variable displacement;
+    public Vector2Variable velocity;
+    public Vector2Variable acceleration;
 
     private float timeToJumpApex;
     protected float jumpGravity;
     protected float fallGravity;
     protected float jumpVelocity;
 
-    protected Vector2 displacement;
-    protected Vector2 velocity;
-    protected Vector2 acceleration;
-    protected float verticalAcceleration;
+    private float horizontalVelocitySmoothing;
+    private bool isJumping;
 
-    internal MovementController controller;
-    protected PlayerInput Input;
+    private PlayerState currentState;
 
-    protected bool isJumping = false;
-
-    protected float horizontalVelocitySmoothing;
-
-    protected MovementInfo movementInfo = new MovementInfo();
-
-    // Debug (Can be delete)
-    private bool onGround;
-    private bool collideLeft;
-    private bool collideRight;
-    private bool isWallHugging;
-    private bool isJumpingFromGround;
-    private bool canClimbLadder;
-    private bool isClimbing;
-    private bool onHorizontalSlope;
-    private bool onVerticalSlope;
-    private float xSlopeAngle;
-    private float ySlopeAngle;
-    private float slopeDirection;
-    
-    protected void Start()
+    private void Awake()
     {
-        controller = GetComponent<MovementController>();
-        Input = GetComponent<PlayerInput>();
         CalculateJump();
+        controller.OnTriggerEnterEvent += OnTriggerEnterEvent;
+        controller.OnTriggerExitEvent += OnTriggerExitEvent;
+        controller.OnControllerCollidedEvent += OnControllerCollidedEvent;
     }
 
-    protected void Update()
+    #region Event listeners
+
+    private void OnTriggerEnterEvent(Collider2D col)
     {
-        GetInput();
-        DisplayDebugInfo();
-        movementInfo.Update(controller);
+    }
+
+    private void OnTriggerExitEvent(Collider2D col)
+    {
+    }
+
+    private void OnControllerCollidedEvent(RaycastHit2D hit)
+    {
+    }
+
+    #endregion
+
+    private void Update()
+    {
         StopMotionOnCollision();
 
-        MoveHorizontally();
-        HandelWallSliding();
-        ClimbLadder();
-        
-        if (isJumping)
-        {
-            Jump();
-        }
-
-        SetGravity();
+        currentState.Execute();
 
         CalculateKinematics();
         Physics2D.SyncTransforms();
-        controller.Move(displacement, Input.DirectionalInput);
-        UpdateAnimator();
+        controller.Move(displacement.Value);
+
+        velocity.Value = controller.velocity;
     }
 
     private void CalculateKinematics()
     {
-        displacement = (velocity * Time.deltaTime) + (0.5f * acceleration * Mathf.Pow(Time.deltaTime, 2));
-        Vector2 newAcceleration = new Vector2(0, verticalAcceleration);
-        velocity += 0.5f * (acceleration + acceleration) * Time.deltaTime;
-        acceleration = newAcceleration;
-    }
-
-    private void MoveHorizontally()
-    {
-        float targetVelocityX = Input.DirectionalInput.x * WalkSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref horizontalVelocitySmoothing, HorizontalAccTime);
-    }
-
-    private void CalculateJump()
-    {
-        timeToJumpApex = MaxJumpDistance * ApexRelativePosition / WalkSpeed;
-        jumpGravity = -2 * JumpHeight / Mathf.Pow(timeToJumpApex, 2);
-        jumpVelocity = -jumpGravity * timeToJumpApex;
-
-        fallGravity = -2 * JumpHeight / Mathf.Pow(MaxJumpDistance * (1 - ApexRelativePosition) / WalkSpeed, 2);
-
-        verticalAcceleration = jumpGravity;
-    }
-
-    internal virtual void Jump()
-    {
-        isJumping = false;
-
-        verticalAcceleration = jumpGravity;
-        velocity.y = jumpVelocity;
-        movementInfo.IsJumpingFromGround = true;
+        velocity.Value += acceleration.Value * Time.deltaTime;
+        displacement.Value = velocity.Value * Time.deltaTime;
     }
 
     private void SetGravity()
     {
-        if (displacement.y < 0 && !movementInfo.IsClimbing)
+        if (velocity.Value.y < 0)
         {
-            verticalAcceleration = fallGravity;
+            acceleration.Value = new Vector2(0, fallGravity);
         }
-        else if (displacement.y > 0 && !Input.JumpKeyDown && movementInfo.IsJumpingFromGround)
+        else if (displacement.Value.y > 0 && !Input.JumpKeyDown)
         {
-            verticalAcceleration = fallGravity * FallMultiplier;
+            acceleration.Value = new Vector2(0, fallGravity * player.FallMultiplier);
         }
     }
 
-    internal void OnJumpInputDown()
+    private void Jump()
     {
-        if ((controller.Collisions.Below || movementInfo.IsWallHugging || controller.Collisions.CanClimbLadder) && Input.DirectionalInput.y >= 0)
+        isJumping = false;
+
+        acceleration.Value = new Vector2(0, jumpGravity);
+        velocity.Value.y = jumpVelocity;
+    }
+
+    public void OnJumpInputDown(InputActionEventData data)
+    {
+        if (controller.isGrounded && Input.DirectionalInput.y >= 0)
         {
             isJumping = true;
         }
     }
 
-    protected virtual void HandelWallSliding() { }
+    private void StopMotionOnCollision()
+    {
+        if (controller.isGrounded)
+        {
+            velocity.Value.y = 0;
+        }
+    }
+
+    private void MoveHorizontally()
+    {
+        float targetVelocityX = Input.DirectionalInput.x * player.WalkSpeed;
+        velocity.Value.x = Mathf.SmoothDamp(velocity.Value.x, targetVelocityX, ref horizontalVelocitySmoothing, player.HorizontalAccelerationTime);
+    }
+
+    private void HandelWallSliding()
+    {
+    }
 
     private void ClimbLadder()
     {
-        if (controller.Collisions.CanClimbLadder)
-        {
-            verticalAcceleration = 0;
-            if (Input.DirectionalInput.y != 0)
-            {
-                velocity.y = LadderClimbSpeed * Input.DirectionalInput.y;
-                movementInfo.IsClimbing = true;
-            }
-            else
-            {
-                velocity.y = displacement.y = 0;
-            }
-        }
     }
 
-    private void StopMotionOnCollision()
+    private void CalculateJump()
     {
-        if (controller.Collisions.Below)
-        {
-            displacement.y = velocity.y = 0;
-        }
+        timeToJumpApex = player.MaxJumpDistance * player.ApexRelativePosition / player.WalkSpeed;
+        jumpGravity = -2 * player.JumpHeight / Mathf.Pow(timeToJumpApex, 2);
+        jumpVelocity = -jumpGravity * timeToJumpApex;
 
-        if (controller.Collisions.Above)
-        {
-            displacement.y = velocity.y = 0;
-        }
+        fallGravity = -2 * player.JumpHeight / Mathf.Pow(player.MaxJumpDistance * (1 - player.ApexRelativePosition) / player.WalkSpeed, 2);
+
+        acceleration.Value = new Vector2(0, jumpGravity);
     }
 
-    private void GetInput()
+    public void SetState(PlayerState newState)
     {
-        if (Input.DirectionalInput.x > 0)
-        {
-            movementInfo.FaceDirection = 1;
-        }
-        else if (Input.DirectionalInput.x < 0)
-        {
-            movementInfo.FaceDirection = -1;
-        }
-    }
+        if (currentState != null)
+            currentState.Exit();
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.tag == "Ladder")
-        {
-            controller.Collisions.CanClimbLadder = true;
-        }
-    }
+        currentState = newState;
 
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.tag == "Ladder")
-        {
-            controller.Collisions.CanClimbLadder = false;
-            verticalAcceleration = fallGravity;
-        }
-    }
-
-    internal virtual void UpdateAnimator()
-    {
-
-    }
-
-    private void DisplayDebugInfo()
-    {
-        onGround = controller.Collisions.Below;
-        collideLeft = controller.Collisions.Left;
-        collideRight = controller.Collisions.Right;
-        isWallHugging = movementInfo.IsWallHugging;
-        isJumpingFromGround = movementInfo.IsJumpingFromGround;
-        canClimbLadder = controller.Collisions.CanClimbLadder;
-        isClimbing = movementInfo.IsClimbing;
-    }
-
-    protected class MovementInfo
-    {
-        internal bool IsWallHugging { get; set; } = false;
-
-        internal bool IsJumpingFromGround { get; set; } = false;
-
-        internal int FaceDirection { get; set; } = 0;
-
-        internal int HorizontalCollisionDir { get; set; } = 0;
-
-        internal bool IsClimbing { get; set; } = false;
-
-        internal void Update(MovementController controller)
-        {
-            if (controller.Collisions.Left)
-            {
-                HorizontalCollisionDir = -1;
-            }
-            else if (controller.Collisions.Right)
-            {
-                HorizontalCollisionDir = 1;
-            }
-            else
-            {
-                HorizontalCollisionDir = 0;
-                IsWallHugging = false;
-            }
-
-            if (controller.Collisions.Below)
-            {
-                IsJumpingFromGround = false;
-            }
-
-            IsClimbing = false;
-        }
+        if (currentState != null)
+            currentState.Enter();
     }
 }
